@@ -54,12 +54,14 @@
   <button id="download-button" disabled>Download Result</button>
 </div>
 <div>
+  <canvas id="preview-canvas"></canvas>
   <img src="" id="preview-image">
 </div>
 <script>
   const imageContainer = document.getElementById('image-container');
   const backgroundImage = document.getElementById('background-image');
   const uploadedImage = document.getElementById('uploaded-image');
+  const previewCanvas = document.getElementById('preview-canvas');
   const previewImage = document.getElementById('preview-image');
   const frontImage = document.querySelector('.front-image');
   const uploadImageInput = document.getElementById('upload-image');
@@ -166,6 +168,10 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
+    // Set the dimensions of the preview canvas
+    previewCanvas.width = backgroundImage.width;
+    previewCanvas.height = backgroundImage.height;
+    
     // Use HTML2Canvas to capture the content of the image container
     html2canvas(imageContainer).then((canvasContainer) => {
       ctx.drawImage(canvasContainer, 0, 0, backgroundImage.width, backgroundImage.height);
