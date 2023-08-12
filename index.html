@@ -37,8 +37,8 @@
 <p>Select points on the background image and upload an image to overlay.</p>
 <div id="image-container">
   <img src="Back.jpg" id="background-image">
-  <img src="" id="uploaded-image" class="overlay-image">
-  <img src="Front.png" class="front-image">
+  <img src="" id="uploaded-image" class="overlay-image" crossorigin="anonymous">
+  <img src="Front.png" class="front-image" crossorigin="anonymous">
 </div>
 <div>
   <h2>Upload Image</h2>
@@ -144,6 +144,11 @@
     // Draw the background image
     ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
 
+    // Draw the front overlay image
+    if (frontImage.src && frontImage.complete) {
+      ctx.drawImage(frontImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    }
+
     // Draw the uploaded overlay image
     if (uploadedImage.src && uploadedImage.complete) {
       const uploadedImageX = parseFloat(uploadedImage.style.left);
@@ -151,15 +156,6 @@
       const uploadedImageWidth = parseFloat(uploadedImage.style.width);
       const uploadedImageHeight = parseFloat(uploadedImage.style.height);
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
-    }
-
-    // Draw the front overlay image
-    if (frontImage.src && frontImage.complete) {
-      const frontImageX = parseFloat(frontImage.style.left);
-      const frontImageY = parseFloat(frontImage.style.top);
-      const frontImageWidth = parseFloat(frontImage.style.width);
-      const frontImageHeight = parseFloat(frontImage.style.height);
-      ctx.drawImage(frontImage, frontImageX, frontImageY, frontImageWidth, frontImageHeight);
     }
 
     // Convert the canvas content to a Blob
