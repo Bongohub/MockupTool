@@ -138,8 +138,8 @@
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
     const canvas = document.createElement('canvas');
-    const containerWidth = imageContainer.offsetWidth;
-    const containerHeight = imageContainer.offsetHeight;
+    const containerWidth = window.innerWidth;
+    const containerHeight = window.innerHeight;
     canvas.width = containerWidth;
     canvas.height = containerHeight;
     const ctx = canvas.getContext('2d');
