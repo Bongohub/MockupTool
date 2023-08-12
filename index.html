@@ -137,27 +137,25 @@
 
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = backgroundImage.width;
-    canvas.height = backgroundImage.height;
-    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.createElement('canvas');
+    canvasContainer.width = backgroundImage.width;
+    canvasContainer.height = backgroundImage.height;
+    const ctxContainer = canvasContainer.getContext('2d');
 
-    // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    // Draw the background image on the container canvas
+    ctxContainer.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
 
-    // Draw the uploaded overlay image
+    // Draw the uploaded overlay image on the container canvas
     if (uploadedImage.src && uploadedImage.complete) {
       const uploadedImageX = parseFloat(uploadedImage.style.left);
       const uploadedImageY = parseFloat(uploadedImage.style.top);
       const uploadedImageWidth = parseFloat(uploadedImage.style.width);
       const uploadedImageHeight = parseFloat(uploadedImage.style.height);
-      ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
+      ctxContainer.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Use HTML2Canvas to capture the content of the image container
-    html2canvas(imageContainer).then((canvasContainer) => {
-      ctx.drawImage(canvasContainer, 0, 0, backgroundImage.width, backgroundImage.height);
-
+    // Use HTML2Canvas to capture the content of the container canvas
+    html2canvas(canvasContainer).then((canvas) => {
       // Convert the canvas content to a Blob
       canvas.toBlob(blob => {
         // Create a URL for the Blob
