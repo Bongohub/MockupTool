@@ -138,12 +138,14 @@
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
     const canvas = document.createElement('canvas');
-    canvas.width = backgroundImage.width;
-    canvas.height = backgroundImage.height;
+    const containerWidth = imageContainer.offsetWidth;
+    const containerHeight = imageContainer.offsetHeight;
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
     const ctx = canvas.getContext('2d');
 
     // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    ctx.drawImage(backgroundImage, 0, 0, containerWidth, containerHeight);
 
     // Draw the uploaded overlay image
     if (uploadedImage.src && uploadedImage.complete) {
@@ -154,26 +156,31 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Convert the canvas content to a Blob
-    canvas.toBlob(blob => {
-      // Create a URL for the Blob
-      const url = URL.createObjectURL(blob);
+    // Use HTML2Canvas to capture the content of the image container
+    html2canvas(imageContainer).then((canvasContainer) => {
+      ctx.drawImage(canvasContainer, 0, 0, containerWidth, containerHeight);
 
-      // Create an anchor element for downloading
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'combined_image.png';
+      // Convert the canvas content to a Blob
+      canvas.toBlob(blob => {
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
 
-      // Simulate a click event on the link to trigger the download
-      document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
-      downloadLink.click();
+        // Create an anchor element for downloading
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'combined_image.png';
 
-      // Remove the anchor element
-      document.body.removeChild(downloadLink);
+        // Simulate a click event on the link to trigger the download
+        document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+        downloadLink.click();
 
-      // Clean up the URL
-      URL.revokeObjectURL(url);
-    }, 'image/png');
+        // Remove the anchor element
+        document.body.removeChild(downloadLink);
+
+        // Clean up the URL
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    });
   });
 </script>
 </body>
