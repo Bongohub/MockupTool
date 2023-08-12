@@ -31,6 +31,7 @@
     pointer-events: none; /* Allow clicks to go through the overlay image */
   }
 </style>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 <h1>Overlay Image on Background</h1>
@@ -153,26 +154,31 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Convert the canvas content to a Blob
-    canvas.toBlob(blob => {
-      // Create a URL for the Blob
-      const url = URL.createObjectURL(blob);
+    // Use HTML2Canvas to capture the content of the image container
+    html2canvas(imageContainer).then((canvasContainer) => {
+      ctx.drawImage(canvasContainer, 0, 0, backgroundImage.width, backgroundImage.height);
 
-      // Create an anchor element for downloading
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'combined_image.png';
+      // Convert the canvas content to a Blob
+      canvas.toBlob(blob => {
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
 
-      // Simulate a click event on the link to trigger the download
-      document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
-      downloadLink.click();
+        // Create an anchor element for downloading
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'combined_image.png';
 
-      // Remove the anchor element
-      document.body.removeChild(downloadLink);
+        // Simulate a click event on the link to trigger the download
+        document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+        downloadLink.click();
 
-      // Clean up the URL
-      URL.revokeObjectURL(url);
-    }, 'image/png');
+        // Remove the anchor element
+        document.body.removeChild(downloadLink);
+
+        // Clean up the URL
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    });
   });
 </script>
 </body>
