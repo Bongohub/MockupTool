@@ -9,6 +9,7 @@
   #image-container {
     position: relative;
     max-width: 100%;
+    overflow: hidden;
   }
   .corner {
     position: absolute;
@@ -137,9 +138,11 @@
 
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
+    const containerWidth = backgroundImage.width;
+    const containerHeight = backgroundImage.height;
+
+    // Create a temporary canvas to draw the combined image
     const canvas = document.createElement('canvas');
-    const containerWidth = imageContainer.offsetWidth;
-    const containerHeight = imageContainer.offsetHeight;
     canvas.width = containerWidth;
     canvas.height = containerHeight;
     const ctx = canvas.getContext('2d');
@@ -156,28 +159,19 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Use HTML2Canvas to capture the content of the image container
+    // Draw the HTML content onto the canvas using html2canvas
     html2canvas(imageContainer).then((canvasContainer) => {
       ctx.drawImage(canvasContainer, 0, 0, containerWidth, containerHeight);
 
-      // Convert the canvas content to a Blob
+      // Convert the canvas content to a Blob and trigger download
       canvas.toBlob(blob => {
-        // Create a URL for the Blob
         const url = URL.createObjectURL(blob);
-
-        // Create an anchor element for downloading
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
         downloadLink.download = 'combined_image.png';
-
-        // Simulate a click event on the link to trigger the download
-        document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
         downloadLink.click();
 
-        // Remove the anchor element
-        document.body.removeChild(downloadLink);
-
-        // Clean up the URL
+        // Clean up
         URL.revokeObjectURL(url);
       }, 'image/png');
     });
