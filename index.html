@@ -165,15 +165,13 @@
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
         downloadLink.download = 'combined_image.png';
-
-        // Simulate a click event on the link to trigger the download
         document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+
+        // Trigger the download
         downloadLink.click();
 
-        // Remove the anchor element
+        // Clean up the anchor element and URL
         document.body.removeChild(downloadLink);
-
-        // Clean up the URL
         URL.revokeObjectURL(url);
       }, 'image/png');
     });
