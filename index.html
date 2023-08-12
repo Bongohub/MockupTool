@@ -1,184 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Overlay Image on Background</title>
-<style>
-  /* Styling for the image container and corners */
-  #image-container {
-    position: relative;
-    max-width: 100%;
-  }
-  .corner {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: red;
-    transform: translate(-50%, -50%);
-  }
-  .overlay-image {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 1;
-  }
-  .front-image {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 2;
-    pointer-events: none; /* Allow clicks to go through the overlay image */
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Image on Background</title>
+  <style>
+    /* Styling for the image container and corners */
+    #image-container {
+      position: relative;
+      max-width: 100%;
+    }
+    .corner {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      transform: translate(-50%, -50%);
+    }
+    .overlay-image {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+    .front-image {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      pointer-events: none; /* Allow clicks to go through the overlay image */
+    }
+  </style>
 </head>
 <body>
-<h1>Overlay Image on Background</h1>
-<p>Select points on the background image and upload an image to overlay.</p>
-<div id="image-container">
-  <img src="Back.jpg" id="background-image">
-  <img src="" id="uploaded-image" class="overlay-image">
-  <img src="Front.png" class="front-image">
-</div>
-<div>
-  <h2>Upload Image</h2>
-  <input type="file" id="upload-image" accept="image/*">
-</div>
-<div>
-  <button id="download-button" disabled>Download Result</button>
-</div>
-<script>
-  const imageContainer = document.getElementById('image-container');
-  const backgroundImage = document.getElementById('background-image');
-  const uploadedImage = document.getElementById('uploaded-image');
-  const frontImage = document.querySelector('.front-image');
-  const uploadImageInput = document.getElementById('upload-image');
-  const downloadButton = document.getElementById('download-button');
-  
-  let selectedPoints = [];
-  let pointMarkers = [];
+  <h1>Overlay Image on Background</h1>
+  <p>Select points on the background image and upload an image to overlay.</p>
+  <div id="image-container">
+    <img src="Back.jpg" id="background-image">
+    <img src="" id="uploaded-image" class="overlay-image">
+    <img src="Front.png" class="front-image">
+  </div>
+  <div>
+    <h2>Upload Image</h2>
+    <input type="file" id="upload-image" accept="image/*">
+  </div>
+  <div>
+    <button id="download-button" disabled>Download Result</button>
+  </div>
+  <script>
+    const imageContainer = document.getElementById('image-container');
+    const backgroundImage = document.getElementById('background-image');
+    const uploadedImage = document.getElementById('uploaded-image');
+    const frontImage = document.querySelector('.front-image');
+    const uploadImageInput = document.getElementById('upload-image');
+    const downloadButton = document.getElementById('download-button');
+    
+    let selectedPoints = [];
+    let pointMarkers = [];
+    let ctx;
 
-  // Handle clicks on the background image to select points
-  backgroundImage.addEventListener('click', handleBackgroundImageClick);
+    // Handle clicks on the background image to select points
+    backgroundImage.addEventListener('click', handleBackgroundImageClick);
 
-  // Handle clicks on the background image to select points
-  function handleBackgroundImageClick(event) {
-    const x = event.clientX - imageContainer.getBoundingClientRect().left;
-    const y = event.clientY - imageContainer.getBoundingClientRect().top;
+    // Handle clicks on the background image to select points
+    function handleBackgroundImageClick(event) {
+      const x = event.clientX - imageContainer.getBoundingClientRect().left;
+      const y = event.clientY - imageContainer.getBoundingClientRect().top;
 
-    if (selectedPoints.length < 4) {
-      selectedPoints.push({ x, y });
-      renderSelectedPoint(x, y);
-      if (selectedPoints.length === 4) {
-        backgroundImage.removeEventListener('click', handleBackgroundImageClick);
-        uploadImageInput.disabled = false;
+      if (selectedPoints.length < 4) {
+        selectedPoints.push({ x, y });
+        renderSelectedPoint(x, y);
+        if (selectedPoints.length === 4) {
+          backgroundImage.removeEventListener('click', handleBackgroundImageClick);
+          uploadImageInput.disabled = false;
+        }
       }
     }
-  }
 
-  // Render a selected point marker
-  function renderSelectedPoint(x, y) {
-    const pointMarker = document.createElement('div');
-    pointMarker.className = 'corner';
-    pointMarker.style.left = `${x}px`;
-    pointMarker.style.top = `${y}px`;
-    imageContainer.appendChild(pointMarker);
-    pointMarkers.push(pointMarker);
-  }
-
-  // Handle uploaded overlay image for transformation
-  uploadImageInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      uploadedImage.src = URL.createObjectURL(file);
-      uploadedImage.onload = () => {
-        uploadedImage.style.width = `${backgroundImage.width}px`;
-        uploadedImage.style.height = `${backgroundImage.height}px`;
-        transformAndDisplayImage();
-      };
-    }
-  });
-
-  // Transform and display the image by placing its corners on selected points
-  function transformAndDisplayImage() {
-    if (selectedPoints.length !== 4) {
-      alert('Please select four points on the background image.');
-      return;
+    // Render a selected point marker
+    function renderSelectedPoint(x, y) {
+      const pointMarker = document.createElement('div');
+      pointMarker.className = 'corner';
+      pointMarker.style.left = `${x}px`;
+      pointMarker.style.top = `${y}px`;
+      imageContainer.appendChild(pointMarker);
+      pointMarkers.push(pointMarker);
     }
 
-    const [topLeft, topRight, bottomRight, bottomLeft] = selectedPoints;
+    // Handle uploaded overlay image for transformation
+    uploadImageInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        uploadedImage.src = URL.createObjectURL(file);
+        uploadedImage.onload = () => {
+          uploadedImage.style.width = `${backgroundImage.width}px`;
+          uploadedImage.style.height = `${backgroundImage.height}px`;
+          transformAndDisplayImage();
+        };
+      }
+    });
 
-    const width = Math.sqrt((topRight.x - topLeft.x)**2 + (topRight.y - topLeft.y)**2);
-    const height = Math.sqrt((bottomLeft.x - topLeft.x)**2 + (bottomLeft.y - topLeft.y)**2);
+    // Transform and display the image by placing its corners on selected points
+    function transformAndDisplayImage() {
+      if (selectedPoints.length !== 4) {
+        alert('Please select four points on the background image.');
+        return;
+      }
 
-    const centerX = (topLeft.x + topRight.x) / 2;
-    const centerY = (topLeft.y + bottomLeft.y) / 2;
+      const [topLeft, topRight, bottomRight, bottomLeft] = selectedPoints;
 
-    const offsetX = centerX - width / 2;
-    const offsetY = centerY - height / 2;
+      const width = Math.sqrt((topRight.x - topLeft.x)**2 + (topRight.y - topLeft.y)**2);
+      const height = Math.sqrt((bottomLeft.x - topLeft.x)**2 + (bottomLeft.y - topLeft.y)**2);
 
-    uploadedImage.style.left = `${offsetX}px`;
-    uploadedImage.style.top = `${offsetY}px`;
+      const centerX = (topLeft.x + topRight.x) / 2;
+      const centerY = (topLeft.y + bottomLeft.y) / 2;
 
-    uploadedImage.style.width = `${width}px`;
-    uploadedImage.style.height = `${height}px`;
+      const offsetX = centerX - width / 2;
+      const offsetY = centerY - height / 2;
 
-    uploadedImage.style.clipPath = `polygon(0 0, ${width}px 0, ${width}px ${height}px, 0 ${height}px)`;
+      uploadedImage.style.left = `${offsetX}px`;
+      uploadedImage.style.top = `${offsetY}px`;
 
-    // Remove the red point markers
-    for (let marker of pointMarkers) {
-      imageContainer.removeChild(marker);
+      uploadedImage.style.width = `${width}px`;
+      uploadedImage.style.height = `${height}px`;
+
+      uploadedImage.style.clipPath = `polygon(0 0, ${width}px 0, ${width}px ${height}px, 0 ${height}px)`;
+
+      // Remove the red point markers
+      for (let marker of pointMarkers) {
+        imageContainer.removeChild(marker);
+      }
+
+      // Enable the download button
+      downloadButton.disabled = false;
     }
 
-    // Enable the download button
-    downloadButton.disabled = false;
-  }
+    // Handle the download button click
+    downloadButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = backgroundImage.width;
+      canvas.height = backgroundImage.height;
+      ctx = canvas.getContext('2d');
 
-  // Handle the download button click
-  downloadButton.addEventListener('click', () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = backgroundImage.width;
-    canvas.height = backgroundImage.height;
-    const ctx = canvas.getContext('2d');
+      // Draw the background image
+      ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
 
-    // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+      // Draw the front overlay image
+      if (frontImage.src && frontImage.complete) {
+        const frontImageX = uploadedImage.style.left;
+        const frontImageY = uploadedImage.style.top;
+        const frontImageWidth = uploadedImage.style.width;
+        const frontImageHeight = uploadedImage.style.height;
+        ctx.drawImage(frontImage, parseFloat(frontImageX), parseFloat(frontImageY), parseFloat(frontImageWidth), parseFloat(frontImageHeight));
+      }
 
-    // Draw the front overlay image
-    if (frontImage.src && frontImage.complete) {
-      ctx.drawImage(frontImage, 0, 0, backgroundImage.width, backgroundImage.height);
-    }
+      // Draw the uploaded overlay image
+      if (uploadedImage.src && uploadedImage.complete) {
+        const uploadedImageX = parseFloat(uploadedImage.style.left);
+        const uploadedImageY = parseFloat(uploadedImage.style.top);
+        const uploadedImageWidth = parseFloat(uploadedImage.style.width);
+        const uploadedImageHeight = parseFloat(uploadedImage.style.height);
+        ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
+      }
 
-    // Draw the uploaded overlay image
-    if (uploadedImage.src && uploadedImage.complete) {
-      const uploadedImageX = parseFloat(uploadedImage.style.left);
-      const uploadedImageY = parseFloat(uploadedImage.style.top);
-      const uploadedImageWidth = parseFloat(uploadedImage.style.width);
-      const uploadedImageHeight = parseFloat(uploadedImage.style.height);
-      ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
-    }
+      // Convert the canvas content to a Blob
+      canvas.toBlob(blob => {
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
 
-    // Convert the canvas content to a Blob
-    canvas.toBlob(blob => {
-      // Create a URL for the Blob
-      const url = URL.createObjectURL(blob);
+        // Create an anchor element for downloading
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'combined_image.png';
 
-      // Create an anchor element for downloading
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'combined_image.png';
+        // Simulate a click event on the link to trigger the download
+        document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+        downloadLink.click();
 
-      // Simulate a click event on the link to trigger the download
-      document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
-      downloadLink.click();
+        // Remove the anchor element
+        document.body.removeChild(downloadLink);
 
-      // Remove the anchor element
-      document.body.removeChild(downloadLink);
-
-      // Clean up the URL
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-  });
-</script>
+        // Clean up the URL
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    });
+  </script>
 </body>
 </html>
