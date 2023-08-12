@@ -174,7 +174,7 @@
     
     // Use HTML2Canvas to capture the content of the image container
     html2canvas(imageContainer).then((canvasContainer) => {
-      ctx.drawImage(canvasContainer, 0, 0, backgroundImage.width, backgroundImage.height);
+      ctx.drawImage(canvasContainer, 0, 0, 1080, 662);
 
       // Set the preview image source
       previewImage.src = canvas.toDataURL('image/png');
