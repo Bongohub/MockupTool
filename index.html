@@ -153,15 +153,6 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Draw the front overlay image
-    if (frontImage.src && frontImage.complete) {
-      const frontImageX = parseFloat(frontImage.style.left);
-      const frontImageY = parseFloat(frontImage.style.top);
-      const frontImageWidth = parseFloat(frontImage.style.width);
-      const frontImageHeight = parseFloat(frontImage.style.height);
-      ctx.drawImage(frontImage, frontImageX, frontImageY, frontImageWidth, frontImageHeight);
-    }
-
     // Convert the canvas content to a Blob
     canvas.toBlob(blob => {
       // Create a URL for the Blob
