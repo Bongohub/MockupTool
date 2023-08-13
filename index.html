@@ -7,8 +7,10 @@
 <style>
   /* Styling for the image container and corners */
   #image-container {
-    position: relative;
-    max-width: 100%;
+    position:relative;
+    width: 1080px;
+    height: 662px;
+    max-width: 100;
   }
   .corner {
     position: absolute;
@@ -30,10 +32,6 @@
     z-index: 2;
     pointer-events: none; /* Allow clicks to go through the overlay image */
   }
-  #preview-canvas {
-    width: 1080px;
-    height: 662px;
-  }
 </style>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
@@ -50,22 +48,14 @@
   <input type="file" id="upload-image" accept="image/*">
 </div>
 <div>
-  <button id="preview-button" disabled>Preview Result</button>
   <button id="download-button" disabled>Download Result</button>
-</div>
-<div>
-  <canvas id="preview-canvas"></canvas>
-  <img src="" id="preview-image">
 </div>
 <script>
   const imageContainer = document.getElementById('image-container');
   const backgroundImage = document.getElementById('background-image');
   const uploadedImage = document.getElementById('uploaded-image');
-  const previewCanvas = document.getElementById('preview-canvas');
-  const previewImage = document.getElementById('preview-image');
   const frontImage = document.querySelector('.front-image');
   const uploadImageInput = document.getElementById('upload-image');
-  const previewButton = document.getElementById('preview-button');
   const downloadButton = document.getElementById('download-button');
   
   let selectedPoints = [];
@@ -85,7 +75,6 @@
       if (selectedPoints.length === 4) {
         backgroundImage.removeEventListener('click', handleBackgroundImageClick);
         uploadImageInput.disabled = false;
-        previewButton.disabled = false;
       }
     }
   }
@@ -144,53 +133,21 @@
       imageContainer.removeChild(marker);
     }
 
-    // Enable the preview and download buttons
-    previewButton.disabled = false;
+    // Enable the download button
     downloadButton.disabled = false;
   }
-
-  // Handle the preview button click
-  previewButton.addEventListener('click', () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 662;
-    const ctx = canvas.getContext('2d');
-
-    // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, 1080, 662);
-
-    // Draw the uploaded overlay image
-    if (uploadedImage.src && uploadedImage.complete) {
-      const uploadedImageX = parseFloat(uploadedImage.style.left);
-      const uploadedImageY = parseFloat(uploadedImage.style.top);
-      const uploadedImageWidth = parseFloat(uploadedImage.style.width);
-      const uploadedImageHeight = parseFloat(uploadedImage.style.height);
-      ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
-    }
-
-    // Set the dimensions of the preview canvas
-    previewCanvas.width = 1080;
-    previewCanvas.height = 662;
-    
-    // Use HTML2Canvas to capture the content of the image container
-    html2canvas(imageContainer).then((canvasContainer) => {
-      ctx.drawImage(canvasContainer, 0, 0, 1080, 662);
-
-      // Set the preview image source
-      previewImage.src = canvas.toDataURL('image/png');
-      previewImage.style.display = 'block';
-    });
-  });
 
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 662;
+    const containerWidth = imageContainer.offsetWidth;
+    const containerHeight = imageContainer.offsetHeight;
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
     const ctx = canvas.getContext('2d');
 
     // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    ctx.drawImage(backgroundImage, 0, 0, containerWidth, containerHeight);
 
     // Draw the uploaded overlay image
     if (uploadedImage.src && uploadedImage.complete) {
@@ -203,7 +160,7 @@
 
     // Use HTML2Canvas to capture the content of the image container
     html2canvas(imageContainer).then((canvasContainer) => {
-      ctx.drawImage(canvasContainer, 0, 0, backgroundImage.width, backgroundImage.height);
+      ctx.drawImage(canvasContainer, 0, 0, containerWidth, containerHeight);
 
       // Convert the canvas content to a Blob
       canvas.toBlob(blob => {
