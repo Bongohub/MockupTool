@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup Tool</title>
+<style>
+  /* Styling for the image container and corners */
+  #image-container {
+    position: relative;
+    max-width: 100%;
+  }
+  .corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    transform: translate(-50%, -50%);
+  }
+  .overlay-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+  }
+  .front-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    pointer-events: none; /* Allow clicks to go through the overlay image */
+  }
+
+  input[type="file"] {
+    display: none; /* Hide the default input */
+  }
+  .custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #f1f1f1;
+    color: #333;
+    border-radius: 4px;
+  }
+
+</style>
+</head>
+<body>
+<h1>Mockup Tool</h1>
+
+<div>
+  <label for="upload-background-image" class="custom-file-upload"> 1 Background</label>
+  <input type="file" id="upload-background-image" accept="image/*">
+</div>
+
+<div>
+  <label for="upload-front-image" class="custom-file-upload">2 Foreground</label>
+  <input type="file" id="upload-front-image" accept="image/*">
+</div>
+
+<div id="image-container">
+  <!-- Background Image -->
+  <img src="" id="background-image">
+  <!-- Uploaded Overlay Image -->
+  <img src="" id="uploaded-image" class="overlay-image" crossorigin="anonymous">
+  <!-- Front Overlay Image -->
+  <img src="" class="front-image" crossorigin="anonymous">
+</div>
+
+<div>
+<label for="upload-image" class="custom-file-upload">3 Poster</label>
+<input type="file" id="upload-image" accept="image/*">
+</div>
+
+<div>
+  <button id="download-button" disabled>Download Result</button>
+</div>
+
+<script>
+  // Get references to the necessary elements
+  const imageContainer = document.getElementById('image-container');
+  const backgroundImage = document.getElementById('background-image');
+  const uploadedImage = document.getElementById('uploaded-image');
+  const frontImage = document.querySelector('.front-image');
+  const uploadBackgroundImageInput = document.getElementById('upload-background-image');
+  const uploadFrontImageInput = document.getElementById('upload-front-image');
+  const uploadImageInput = document.getElementById('upload-image');
+  const downloadButton = document.getElementById('download-button');
+  
+  // Store selected points and point markers
+  let selectedPoints = [];
+  let pointMarkers = [];
+
+  // Handle clicks on the background image to select points
+  backgroundImage.addEventListener('click', handleBackgroundImageClick);
+
+  function handleBackgroundImageClick(event) {
+    // Calculate the coordinates relative to the image container
+    const x = event.clientX - imageContainer.getBoundingClientRect().left;
+    const y = event.clientY - imageContainer.getBoundingClientRect().top;
+
+    if (selectedPoints.length < 4) {
+      // Store the selected point and render a marker
+      selectedPoints.push({ x, y });
+      renderSelectedPoint(x, y);
+      if (selectedPoints.length === 4) {
+        // Enable image upload after selecting all points
+        backgroundImage.removeEventListener('click', handleBackgroundImageClick);
+        uploadImageInput.disabled = false;
+      }
+    }
+  }
+
+  // Render a selected point marker
+  function renderSelectedPoint(x, y) {
+    const pointMarker = document.createElement('div');
+    pointMarker.className = 'corner';
+    pointMarker.style.left = `${x}px`;
+    pointMarker.style.top = `${y}px`;
+    imageContainer.appendChild(pointMarker);
+    pointMarkers.push(pointMarker);
+  }
+
+  // Handle uploaded overlay image for transformation
+  uploadImageInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Set the uploaded image source and handle its load
+      uploadedImage.src = URL.createObjectURL(file);
+      uploadedImage.onload = () => {
+        // Set dimensions and perform transformation
+        uploadedImage.style.width = `${backgroundImage.width}px`;
+        uploadedImage.style.height = `${backgroundImage.height}px`;
+        transformAndDisplayImage();
+      };
+    }
+  });
+
+  // Transform and display the uploaded image based on selected points
+  function transformAndDisplayImage() {
+    if (selectedPoints.length !== 4) {
+      alert('Please select four points on the background image.');
+      return;
+    }
+
+    // Calculate dimensions and offsets for transformation
+    const [topLeft, topRight, bottomRight, bottomLeft] = selectedPoints;
+    const width = Math.sqrt((topRight.x - topLeft.x)**2 + (topRight.y - topLeft.y)**2);
+    const height = Math.sqrt((bottomLeft.x - topLeft.x)**2 + (bottomLeft.y - topLeft.y)**2);
+    const centerX = (topLeft.x + topRight.x) / 2;
+    const centerY = (topLeft.y + bottomLeft.y) / 2;
+    const offsetX = centerX - width / 2;
+    const offsetY = centerY - height / 2;
+
+    // Apply transformations and set styles
+    uploadedImage.style.left = `${offsetX}px`;
+    uploadedImage.style.top = `${offsetY}px`;
+    uploadedImage.style.width = `${width}px`;
+    uploadedImage.style.height = `${height}px`;
+    uploadedImage.style.clipPath = `polygon(0 0, ${width}px 0, ${width}px ${height}px, 0 ${height}px)`;
+
+    // Remove the red point markers
+    for (let marker of pointMarkers) {
+      imageContainer.removeChild(marker);
+    }
+
+    // Enable the download button
+    downloadButton.disabled = false;
+  }
+
+  // Handle the download button click
+  downloadButton.addEventListener('click', () => {
+    // Create a canvas to draw the final image
+    const canvas = document.createElement('canvas');
+    canvas.width = backgroundImage.width;
+    canvas.height = backgroundImage.height;
+    const ctx = canvas.getContext('2d');
+
+    // Draw the background image
+    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+
+    // Draw the uploaded overlay image
+    if (uploadedImage.src && uploadedImage.complete) {
+      const uploadedImageX = parseFloat(uploadedImage.style.left);
+      const uploadedImageY = parseFloat(uploadedImage.style.top);
+      const uploadedImageWidth = parseFloat(uploadedImage.style.width);
+      const uploadedImageHeight = parseFloat(uploadedImage.style.height);
+      ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
+    }
+
+    // Draw the front overlay image
+    if (frontImage.src && frontImage.complete) {
+      ctx.drawImage(frontImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    }
+
+    // Convert the canvas content to a Blob
+    canvas.toBlob(blob => {
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Create an anchor element for downloading
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = 'combined_image.png';
+
+      // Simulate a click event on the link to trigger the download
+      document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+      downloadLink.click();
+
+      // Remove the anchor element
+      document.body.removeChild(downloadLink);
+
+      // Clean up the URL
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+
+  // Handle uploading background image
+uploadBackgroundImageInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // Get the original file name and extension
+    const originalFileName = file.name;
+    const fileExtension = originalFileName.split('.').pop();
+
+    // Generate the modified file name with ".png" extension
+    const modifiedFileName = originalFileName.replace(`.${fileExtension}`, '.png');
+
+    // Set the background image source URL
+    backgroundImage.src = URL.createObjectURL(file);
+
+   // Store the modified image source URL for later use if needed
+    backgroundImage.dataset.modifiedFileName = modifiedFileName;
+
+    frontImage.src = backgroundImage.dataset.modifiedFileName;
+  }
+});
+
+</script>
+</body>
+</html>
