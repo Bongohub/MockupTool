@@ -7,10 +7,8 @@
 <style>
   /* Styling for the image container and corners */
   #image-container {
-    position:relative;
-    width: 1080px;
-    height: 662px;
-    max-width: 100;
+    position: relative;
+    max-width: 100%;
   }
   .corner {
     position: absolute;
@@ -33,15 +31,14 @@
     pointer-events: none; /* Allow clicks to go through the overlay image */
   }
 </style>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 <h1>Overlay Image on Background</h1>
 <p>Select points on the background image and upload an image to overlay.</p>
 <div id="image-container">
   <img src="Back.jpg" id="background-image">
-  <img src="" id="uploaded-image" class="overlay-image">
-  <img src="Front.png" class="front-image">
+  <img src="" id="uploaded-image" class="overlay-image" crossorigin="anonymous">
+  <img src="Front.png" class="front-image" crossorigin="anonymous">
 </div>
 <div>
   <h2>Upload Image</h2>
@@ -140,14 +137,13 @@
   // Handle the download button click
   downloadButton.addEventListener('click', () => {
     const canvas = document.createElement('canvas');
-    const containerWidth = imageContainer.offsetWidth;
-    const containerHeight = imageContainer.offsetHeight;
-    canvas.width = containerWidth;
-    canvas.height = containerHeight;
+    canvas.width = backgroundImage.width;
+    canvas.height = backgroundImage.height;
     const ctx = canvas.getContext('2d');
 
     // Draw the background image
-    ctx.drawImage(backgroundImage, 0, 0, containerWidth, containerHeight);
+    ctx.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height);
+
 
     // Draw the uploaded overlay image
     if (uploadedImage.src && uploadedImage.complete) {
@@ -158,31 +154,31 @@
       ctx.drawImage(uploadedImage, uploadedImageX, uploadedImageY, uploadedImageWidth, uploadedImageHeight);
     }
 
-    // Use HTML2Canvas to capture the content of the image container
-    html2canvas(imageContainer).then((canvasContainer) => {
-      ctx.drawImage(canvasContainer, 0, 0, containerWidth, containerHeight);
+    // Draw the front overlay image
+    if (frontImage.src && frontImage.complete) {
+      ctx.drawImage(frontImage, 0, 0, backgroundImage.width, backgroundImage.height);
+    }
 
-      // Convert the canvas content to a Blob
-      canvas.toBlob(blob => {
-        // Create a URL for the Blob
-        const url = URL.createObjectURL(blob);
+    // Convert the canvas content to a Blob
+    canvas.toBlob(blob => {
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
 
-        // Create an anchor element for downloading
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = 'combined_image.png';
+      // Create an anchor element for downloading
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = 'combined_image.png';
 
-        // Simulate a click event on the link to trigger the download
-        document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
-        downloadLink.click();
+      // Simulate a click event on the link to trigger the download
+      document.body.appendChild(downloadLink); // Append to DOM for Firefox compatibility
+      downloadLink.click();
 
-        // Remove the anchor element
-        document.body.removeChild(downloadLink);
+      // Remove the anchor element
+      document.body.removeChild(downloadLink);
 
-        // Clean up the URL
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    });
+      // Clean up the URL
+      URL.revokeObjectURL(url);
+    }, 'image/png');
   });
 </script>
 </body>
