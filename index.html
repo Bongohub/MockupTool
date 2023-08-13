@@ -54,7 +54,10 @@
   <input type="file" id="upload-background-image" accept="image/*">
 </div>
 
-
+<div>
+  <label for="upload-front-image" class="custom-file-upload">2 Foreground</label>
+  <input type="file" id="upload-front-image" accept="image/*">
+</div>
 
 <div id="image-container">
   <!-- Background Image -->
@@ -214,26 +217,20 @@
   });
 
   // Handle uploading background image
-uploadBackgroundImageInput.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    // Get the original file name and extension
-    const originalFileName = file.name;
-    const fileExtension = originalFileName.split('.').pop();
+  uploadBackgroundImageInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      backgroundImage.src = URL.createObjectURL(file);
+    }
+  });
 
-    // Generate the modified file name with ".png" extension
-    const modifiedFileName = originalFileName.replace(`.${fileExtension}`, '.png');
-
-    // Set the background image source URL
-    backgroundImage.src = URL.createObjectURL(file);
-
-   // Store the modified image source URL for later use if needed
-    backgroundImage.dataset.modifiedFileName = modifiedFileName;
-
-    frontImage.src = backgroundImage.dataset.modifiedFileName;
-  }
-});
-
+  // Handle uploading front overlay image
+  uploadFrontImageInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      frontImage.src = URL.createObjectURL(file);
+    }
+  });
 </script>
 </body>
 </html>
