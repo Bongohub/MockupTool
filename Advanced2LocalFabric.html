@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layered Images with Fabric.js</title>
+    <script src="fabric.min.js"></script>
+</head>
+<body>
+    <h1>Advanced Mockup Tool</h1>
+
+    <div>
+        <label for="upload-image1">Background</label>
+        <input type="file" id="upload-image1" accept="image/*">
+    </div>
+
+    <div>
+        <label for="upload-image2">Poster</label>
+        <input type="file" id="upload-image2" accept="image/*">
+    </div>
+
+    <div>
+        <label for="upload-image3">Foreground</label>
+        <input type="file" id="upload-image3" accept="image/*">
+    </div>
+
+    <div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div>
+        <button id="combine-and-download">Combine and Download</button>
+    </div>
+
+    <script>
+        const canvas = new fabric.Canvas('canvas', {
+            selection: false
+        });
+
+        function handleImageUpload(event, layerIndex) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            fabric.Image.fromURL(URL.createObjectURL(file), (img) => {
+                if (layerIndex === 0) {
+                    canvas.setDimensions({
+                        width: img.width,
+                        height: img.height
+                    });
+                }
+
+                canvas.add(img);
+                img.moveTo(layerIndex);
+                img.center();
+                img.setCoords();
+                canvas.setActiveObject(img);
+            });
+        }
+
+        document.getElementById('upload-image1').addEventListener('change', (event) => {
+            handleImageUpload(event, 0);
+        });
+
+        document.getElementById('upload-image2').addEventListener('change', (event) => {
+            handleImageUpload(event, 1);
+        });
+
+        document.getElementById('upload-image3').addEventListener('change', (event) => {
+            handleImageUpload(event, 2);
+        });
+
+        canvas.on('object:selected', (e) => {
+            const selectedObject = e.target;
+            selectedObject.hasControls = true;
+            selectedObject.borderColor = 'blue';
+            selectedObject.cornerColor = 'blue';
+            selectedObject.cornerSize = 10;
+            selectedObject.transparentCorners = false;
+        });
+
+        document.getElementById('combine-and-download').addEventListener('click', () => {
+            const mergedImage = canvas.toDataURL({
+                format: 'png',
+                multiplier: 1 // Adjust the multiplier for image quality
+            });
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = mergedImage;
+            downloadLink.download = 'merged_image.png';
+            downloadLink.click();
+        });
+    </script>
+</body>
+</html>
